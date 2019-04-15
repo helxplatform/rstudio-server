@@ -1,4 +1,4 @@
-### Dockerfile for rocker/tidyverse with trial base-layer security improvements, based on Rstudio tidyverse image with additional upgrades ###
+## Dockerfile for rocker/tidyverse with trial base-layer security improvements, based on Rstudio tidyverse image with additional upgrades ###
 FROM rocker/rstudio:3.5.3
 RUN apt-get update -qq && apt-get -y --no-install-recommends install \
   libxml2-dev \
