@@ -31,6 +31,13 @@ RUN wget https://www.openssl.org/source/openssl-1.1.1a.tar.gz && \
     ln -s /usr/local/bin/openssl /usr/bin/openssl && \
     sudo ldconfig 
 RUN groupadd -r -g 1001 user && useradd -r -g user -u 1001 user
+
+RUN echo '#!/usr/bin/with-contenv bash \
+          \n## load /etc/environment vars first: \
+  		  \n for line in $( cat /etc/environment ) ; do export $line ; done \
+          \n exec /usr/lib/rstudio-server/bin/rserver --server-daemonize 0 --auth-none=1' \
+          > /etc/services.d/rstudio/run
+
 WORKDIR /home/user
 EXPOSE 8787
 CMD ["/init"]
