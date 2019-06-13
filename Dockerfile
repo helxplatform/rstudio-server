@@ -33,4 +33,4 @@ RUN wget https://www.openssl.org/source/openssl-1.1.1a.tar.gz && \
 RUN groupadd -r -g 1001 user && useradd -r -g user -u 1001 user
 WORKDIR /home/user
 EXPOSE 8787
-CMD ["/init"]
+CMD ["/usr/lib/rstudio-server/bin/rserver","--server-daemonize=0","--auth-none=1"]
