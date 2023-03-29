@@ -12,7 +12,8 @@ export $(shell sed 's/=.*//' $(cnf))
 # HELP
 # This will output the help for each task
 # thanks to https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
-.PHONY: help build push all
+.PHONY: help build build-nc run up stop release publish publish-latest \
+	publish-version tag tag-latest tag-version docker-clean 
 
 help: ## This help.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -63,3 +64,6 @@ tag-latest: ## Generate container `{version}` tag
 tag-version: ## Generate container `latest` tag
 	@echo 'create tag $(VERSION)'
 	docker tag $(APP_NAME) $(IMAGE_REPO)/$(APP_NAME):$(TAG)
+
+docker-clean: ## Prune unused images, containers, and networks from the local Docker system.
+	docker system prune -f
