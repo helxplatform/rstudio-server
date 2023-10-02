@@ -1,4 +1,4 @@
-FROM ubuntu:jammy-20230308 as base
+FROM ubuntu:jammy-20230816 as base
 
 # Instructions from https://posit.co/download/rstudio-server/.
 
@@ -8,7 +8,7 @@ RUN apt update -y -qq && \
   wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc && \
   add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
 
-# Install R, vim, sudo (for rstudio build).
+# Install R, vim, sudo (for rstudio build). 
 RUN apt install -y --no-install-recommends r-base && \
     apt install -y vim sudo
 
