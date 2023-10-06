@@ -1,76 +1,46 @@
 #!/bin/bash
 
-# Use variables already available from Tycho if there.
-if [ -z "${NB_USER+x}" ]; then
-  echo "NB_USER is not set"
+set -eoux pipefail
+
+export USER=${USER-"helx"}
+export USER_UID=${USER_UID-"1000"}
+export USER_GID=${USER_GID-"0"}
+export DEFAULT_USER="helx"
+# Use NB_PREFIX for base path of ttyd if it is set and BASE_PATH is not set.
+# NB_PREFIX will be set if launched from HeLx.
+export NB_PREFIX=${NB_PREFIX-"/"}
+# if BASE_PATH is set then use that and override NB_PREFIX if set.
+export BASE_PATH=${BASE_PATH-$NB_PREFIX}
+
+declare -i CURRENT_UID=`id -u`
+if [ $CURRENT_UID -ne 0 ]
+then
+  export HOME="/home/$USER"
 else
-  echo "setting USER=$NB_USER"
-  USER=$NB_USER
-fi
-if [ -z "${NB_PREFIX+x}" ]; then
-  echo "NB_PREFIX is not set"
-else
-  echo "setting RSTUDIO_PREFIX=$NB_PREFIX"
-  RSTUDIO_PREFIX=$NB_PREFIX
+  export HOME="/root"
 fi
 
-USER=${USER-"rstudio"}
-MOVE_RSTUDIO_SERVER_HOME=${MOVE_RSTUDIO_SERVER_HOME-"yes"}
-DELETE_RSTUDIO_SERVER_HOME_IF_UNUSED=${DELETE_RSTUDIO_SERVER_HOME_IF_UNUSED-"yes"}
-RSTUDIO_USER="rstudio"
-# RSTUDIO_SERVER_INIT="/usr/local/lib/rstudio-server/extras/init.d/debian/rstudio-server"
-# RSTUDIO_SERVER_INIT="/etc/init.d/rstudio-server"
-RSTUDIO_SERVER_INIT="/rstudio-server"
+# Change to the root directory to mitigate problems if the current working
+# directory is deleted.
+cd /
 
-echo "before /etc/passwd modifications"
-echo "id: `id`"
-echo "USER: $USER"
-echo ""
+# Add other init scripts in $HELX_SCRIPTS_DIR with ".sh" as their extension.
+# To run in a certain order, name them appropriately.
+HELX_SCRIPT_DIR=/helx
+INIT_SCRIPTS_TO_RUN=$(ls -1 $HELX_SCRIPT_DIR/*.sh) || true
+for INIT_SCRIPT in $INIT_SCRIPTS_TO_RUN
+do
+  echo "Running $INIT_SCRIPT"
+  $INIT_SCRIPT
+done
 
-if [ `id -u` -ne 0 ]; then
-  echo "not running as root"
-  if [[ `id -u` -ne 1000 || "$USER" != "$RSTUDIO_USER" ]]; then
-    echo "not running as uid=1000 or USER!=\"$RSTUDIO_USER\""
-    # Modify user entry in /etc/passwd.
-    cp /etc/passwd /tmp/passwd
-    sed -i -e "s/^$RSTUDIO_USER\:x\:1000\:0\:\:\/home\/$RSTUDIO_USER/$USER\:x\:`id -u`\:`id -g`\:\:\/home\/$USER/" /tmp/passwd
-    cp /tmp/passwd /etc/passwd
-    rm /tmp/passwd
+# Change CWD to /home/$USER so it is the starting point for shells.
+cd $HOME
 
-    echo "after /etc/passwd modifications"
-    echo "id: `id`"
-    echo "USER: $USER"
-    echo ""
+# Where user-specific non-essential (cached) data should be written (analogous to /var/cache).
+# Should default to $HOME/.cache.
+# https://wiki.archlinux.org/title/XDG_Base_Directory
+export XDG_CACHE_HOME=$HOME/.cache
 
-    # Modify username that rstudio-server runs as.
-    cp /etc/rstudio/rserver.conf /tmp/rserver.conf
-    sed -i -e "s/^server-user=$RSTUDIO_USER/server-user=$USER/" /tmp/rserver.conf
-    cp /tmp/rserver.conf /etc/rstudio/rserver.conf
-    rm /tmp/rserver.conf
-
-    # Might not want to move the rstudio-server home folder to $USER,
-    # rstudio-server will create a home directory for the user it is
-    # running as if it doesn't exist.
-    if [[ "$MOVE_RSTUDIO_SERVER_HOME" == "yes" ]]; then
-      mv /home/$RSTUDIO_USER /home/$USER
-    fi
-
-    if [[ -d /home/$RSTUDIO_USER ]]; then
-      if [[ "$USER" != "$RSTUDIO_USER" && "$DELETE_RSTUDIO_SERVER_HOME_IF_UNUSED" == "yes" ]]; then
-        rm -rf /home/$RSTUDIO_USER
-      fi
-    fi
-
-  else
-    echo "running as uid=1000 and USER=\"$RSTUDIO_USER\""
-  fi
-fi
-
-# The USER environment variable needs to be set for rserver.
-export USER
-
-if [ "$RSTUDIO_PREFIX" != "" ]; then
-  echo "www-root-path=$RSTUDIO_PREFIX/">>/etc/rstudio/rserver.conf
-fi
-
-$RSTUDIO_SERVER_INIT start
+FINAL_COMMAND=${FINAL_COMMAND-"/start-last.sh"}
+$FINAL_COMMAND

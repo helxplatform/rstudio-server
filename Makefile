@@ -19,21 +19,23 @@ help: ## This help.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 .DEFAULT_GOAL := help
-# Build on a mac - Ref: 
-build: ## Build the image. If building on a mac, check out docs for that. 
-	    docker build --pull --platform=linux/amd64 --progress=plain --build-arg \
+# Build on a mac - Ref:
+build: ## Build the image. If building on a mac, check out docs for that.
+		./create-builder-image.sh
+	    docker build --platform=linux/amd64 --progress=plain --build-arg \
 		  RSTUDIO_SOURCE_TAG=${RSTUDIO_SOURCE_TAG} \
 		  -t ${APP_NAME} .
 
 build-nc: ## Build the image without caching.
-	    docker build --pull --no-cache --platform=linux/amd64 --progress=plain --build-arg \
+		./create-builder-image.sh
+	    docker build --no-cache --platform=linux/amd64 --progress=plain --build-arg \
 		  RSTUDIO_SOURCE_TAG=${RSTUDIO_SOURCE_TAG} \
 		  -t ${APP_NAME} .
 
 run: ## Run container on port configured in `config.env`
 	mkdir -p ./host
 	docker run -i -t --rm --env-file=./run.env -u $(UID):$(GID) \
-	  -v $(PWD)/host:/host -p=$(CONTAINER_PORT):$(FORWARDING_PORT) \
+	  -v $(PWD)/host:/host -p=$(FORWARDING_PORT):$(CONTAINER_PORT) \
 	  --name="$(APP_NAME)" $(APP_NAME) $(ENTRYPOINT)
 
 up: build run ## Run container on port configured in `config.env` (Alias to run)
