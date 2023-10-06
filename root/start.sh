@@ -6,7 +6,7 @@ export USER=${USER-"helx"}
 export USER_UID=${USER_UID-"1000"}
 export USER_GID=${USER_GID-"0"}
 export DEFAULT_USER="helx"
-# Use NB_PREFIX for base path of ttyd if it is set and BASE_PATH is not set.
+# Use NB_PREFIX for base path if it is set and BASE_PATH is not set.
 # NB_PREFIX will be set if launched from HeLx.
 export NB_PREFIX=${NB_PREFIX-"/"}
 # if BASE_PATH is set then use that and override NB_PREFIX if set.

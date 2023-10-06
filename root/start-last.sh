@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ "$RSTUDIO_PREFIX" != "" ]; then
-  echo "www-root-path=$RSTUDIO_PREFIX/">>/etc/rstudio/rserver.conf
+if [ "$BASE_PATH" != "" ]; then
+  echo "www-root-path=$BASE_PATH/">>/etc/rstudio/rserver.conf
 fi
 
 # Modify username that rstudio-server runs as.
