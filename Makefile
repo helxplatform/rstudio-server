@@ -9,6 +9,19 @@ cnf ?= config.env
 include $(cnf)
 export $(shell sed 's/=.*//' $(cnf))
 
+DATETIME := $(shell /bin/date "+%Y%m%d%H%M")
+# get the latest commit hash in the short form
+COMMIT_HASH := $(shell git rev-parse --short HEAD)
+COMMIT_DATETIME := $(shell git log -1 --format=%cd --date=format:"%Y%m%d%H%M")
+CURRENT_BRANCH := $(shell git branch --show-current)
+ifneq ($(shell git status --porcelain),)
+    # add the date/time and '-dirty' if the tree is dirty
+	COMMIT_HASH := $(COMMIT_HASH)-$(DATETIME)-dirty
+else
+	# add the commit date/time if the tree is clean
+	COMMIT_HASH := $(COMMIT_HASH)-$(COMMIT_DATETIME)
+endif
+
 # HELP
 # This will output the help for each task
 # thanks to https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
