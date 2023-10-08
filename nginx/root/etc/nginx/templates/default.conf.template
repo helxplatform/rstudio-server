@@ -1,0 +1,26 @@
+# https://docs.posit.co/ide/server-pro/1.4.1043-2/access-and-security.html#nginx-configuration
+
+server {
+    listen 8080;
+
+    location ${NB_PREFIX}/ {
+        rewrite ^${NB_PREFIX}/(.*)$ /$1 break;
+        proxy_pass http://${RSTUDIO_SERVER_HOST}:${RSTUDIO_SERVER_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_read_timeout 20d;
+        # Use preferably
+        proxy_set_header X-RStudio-Request $scheme://$host:$server_port$request_uri;
+        # This is set with www-root-path in rstudio configuration file.
+        # proxy_set_header X-RStudio-Root-Path ${NB_PREFIX}
+        # OR let the proxy rewrite the root path
+        # proxy_redirect http://${RSTUDIO_SERVER_HOST}:${RSTUDIO_SERVER_PORT}/ $scheme://$host${NB_PREFIX}/;
+        # proxy_cookie_path / ${NB_PREFIX};
+        # OR existing X-Forwarded headers
+        # proxy_set_header X-Forwarded-Host $host;
+        # proxy_set_header X-Forwarded-Proto $scheme;
+        # OR alternatively the Forwarded header (just an example)
+        # proxy_set_header Forwarded "host=$host:$server_port;proto=$scheme;";
+    }
+}
