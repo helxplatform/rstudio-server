@@ -47,7 +47,7 @@ build-nc: ## Build the image without caching.
 run: ## Run container on port configured in `config.env`
 	mkdir -p ./host
 	docker run -i -t --rm --env-file=./${DOCKER_RUN_ENV_FILE} -u $(UID):$(GID) \
-	  -v $(PWD)/host:/host -p=$(FORWARDING_PORT):$(CONTAINER_PORT) \
+	  -v $(PWD)/host:/host -p=$(HOST_PORT):$(CONTAINER_PORT) \
 	  --name="$(APP_NAME)" $(APP_NAME) $(ENTRYPOINT)
 
 up: build run ## Run container on port configured in `config.env` (Alias to run)
