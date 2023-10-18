@@ -38,7 +38,7 @@ RUN apt-get update && \
 # Upgrade packages. Install R, vim, sudo (for rstudio build). 
 RUN apt-get upgrade -y && \
     apt-get install -y --no-install-recommends r-base && \
-    apt-get install -y vim sudo
+    apt-get install -y curl vim sudo
 
 # Install rstudio-server package dependencies.  Package list taken from
 # "Depends" section in output of the dpkg command.
