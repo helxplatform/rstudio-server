@@ -8,11 +8,10 @@ export USER_GID=${USER_GID-"0"}
 export DEFAULT_USER="helx"
 # Use NB_PREFIX for base path if it is set and BASE_PATH is not set.
 # NB_PREFIX will be set if launched from HeLx.
-# export NB_PREFIX=${NB_PREFIX-"/"}
-# Ignore NB_PREFIX and set NB_PREFIX, BASE_PATH so rstudio is served from /.
-export NB_PREFIX=""
+export NB_PREFIX=${NB_PREFIX-"/"}
 # if BASE_PATH is set then use that and override NB_PREFIX if set.
 export BASE_PATH=${BASE_PATH-$NB_PREFIX}
+export RSTUDIO_LOG_LEVEL=${RSTUDIO_LOG_LEVEL-"warn"}
 
 declare -i CURRENT_UID=`id -u`
 if [ $CURRENT_UID -ne 0 ]
