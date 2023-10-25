@@ -15,6 +15,8 @@ make_home() {
   HOME_DIR=$1
   HOME_UID=$2
   HOME_GID=$3
+  # allow errors for this section
+  set +e
   mkdir -p $HOME_DIR
   chown $HOME_UID:$HOME_GID $HOME_DIR
   # Copy default environment setup files if they don't already exist.
@@ -36,6 +38,7 @@ make_home() {
       chown $HOME_UID:$HOME_GID $HOME_DIR/.profile
     fi
   fi
+  set -e
 }
 
 echo "running as UID=$CURRENT_UID GID=$CURRENT_GID"
