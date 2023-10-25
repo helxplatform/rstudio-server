@@ -5,23 +5,25 @@ server {
 
     location ${NB_PREFIX}/ {
         rewrite ^${NB_PREFIX}/(.*)$ /$1 break;
+
+        # Use http here when ssl-enabled=0 is set in rserver.conf
         proxy_pass http://${RSTUDIO_SERVER_HOST}:${RSTUDIO_SERVER_PORT};
+
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
         proxy_read_timeout 20d;
-        # Use preferably
-        # proxy_set_header X-RStudio-Request $scheme://$host:$server_port$request_uri;
-        # This can also be set with www-root-path in rstudio configuration file.
-        # proxy_set_header X-RStudio-Root-Path ${NB_PREFIX};
-        # OR let the proxy rewrite the root path
-        proxy_redirect http://${RSTUDIO_SERVER_HOST}:${RSTUDIO_SERVER_PORT}/ $scheme://$host:$server_port${NB_PREFIX}/;
-        proxy_cookie_path / ${NB_PREFIX};
-        # OR existing X-Forwarded headers
-        # proxy_set_header X-Forwarded-Host $host;
-        # proxy_set_header X-Forwarded-Proto $scheme;
-        # OR alternatively the Forwarded header (just an example)
-        # proxy_set_header Forwarded "host=$host:$server_port;proto=$scheme;";
-    }
 
+        # Not needed if www-root-path is set in rserver.conf
+        proxy_set_header X-RStudio-Root-Path ${NB_PREFIX};
+
+        # Set the Host header to match how users access your site. Omit :server_port if using the default 80/443
+        # so that this value will match the Origin: header for CORS (cross origin security validation)
+        # proxy_set_header Host $host:$server_port;
+        proxy_set_header Host $host;
+
+        # Tells Workbench to send redirect URLs back to https
+        proxy_set_header X-Forwarded-Proto https;
+
+    }
 }
