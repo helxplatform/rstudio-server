@@ -51,6 +51,21 @@ RUN apt-get upgrade -y && \
 RUN apt-get install -y libc6 libclang-dev libpq5 libsqlite3-0 libssl-dev \
     lsb-release psmisc sudo
 
+# Install extra packages for ORDR-D.
+RUN apt-get install -y r-base-dev
+# RUN R -e "install.packages(c('tidyverse', 'tableone', 'dbi', 'odbc', 'caret', 'mlbench', 'mice', 'data.table', 'e1071', 'randomforest', 'xgboost'), dependencies=TRUE)"
+RUN R -e "install.packages('caret', dependencies=TRUE)"
+RUN R -e "install.packages('data.table', dependencies=TRUE)"
+RUN R -e "install.packages('dbi', dependencies=TRUE)"
+RUN R -e "install.packages('e1071', dependencies=TRUE)"
+RUN R -e "install.packages('mice', dependencies=TRUE)"
+RUN R -e "install.packages('mlbench', dependencies=TRUE)"
+RUN R -e "install.packages('odbc', dependencies=TRUE)"
+RUN R -e "install.packages('randomforest', dependencies=TRUE)"
+RUN R -e "install.packages('tableone', dependencies=TRUE)"
+RUN R -e "install.packages('tidyverse', dependencies=TRUE)"
+RUN R -e "install.packages('xgboost', dependencies=TRUE)"
+
 # Copy files used for rstudio configuration and starting rstudio-server.
 COPY root /
 
