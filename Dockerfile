@@ -51,23 +51,36 @@ RUN apt-get upgrade -y && \
 RUN apt-get install -y libc6 libclang-dev libpq5 libsqlite3-0 libssl-dev \
     lsb-release psmisc sudo
 
-# Install extra packages for ORDR-D.
-RUN apt-get install -y r-base-dev
-# RUN R -e "install.packages(c('tidyverse', 'tableone', 'dbi', 'odbc', 'caret', 'mlbench', 'mice', 'data.table', 'e1071', 'randomforest', 'xgboost'), dependencies=TRUE)"
-RUN R -e "install.packages('caret', dependencies=TRUE)"
-RUN R -e "install.packages('data.table', dependencies=TRUE)"
-RUN R -e "install.packages('dbi', dependencies=TRUE)"
-RUN R -e "install.packages('e1071', dependencies=TRUE)"
-RUN R -e "install.packages('mice', dependencies=TRUE)"
-RUN R -e "install.packages('mlbench', dependencies=TRUE)"
-RUN R -e "install.packages('odbc', dependencies=TRUE)"
-RUN R -e "install.packages('randomforest', dependencies=TRUE)"
-RUN R -e "install.packages('tableone', dependencies=TRUE)"
-RUN R -e "install.packages('tidyverse', dependencies=TRUE)"
-RUN R -e "install.packages('xgboost', dependencies=TRUE)"
-
 # Copy files used for rstudio configuration and starting rstudio-server.
 COPY root /
+
+# Install extra packages for ORDR-D.
+# r-project packages available:
+#      https://cloud.r-project.org/web/packages/available_packages_by_name.html
+# Install some debian packages needed for the requested R packages.
+# Packages needed for each R package (not complete):
+#   tidyverse: libfribidi-dev libfreetype6-dev libharfbuzz-dev libpng-dev
+#              libtiff5-dev libjpeg-dev
+RUN apt-get install -y r-base-dev cmake curl libcurl4-openssl-dev \
+      libfontconfig1-dev libfribidi-dev libfreetype6-dev libharfbuzz-dev \
+      libjpeg-dev libpng-dev libpq-dev libssl-dev libtiff5-dev libxml2-dev \
+      unixodbc-dev
+
+# Use a small script that will try to install a package and returns an error
+# if not found after the install function is run.
+RUN Rscript /root/install-r-package.R 'caret' \
+  && Rscript /root/install-r-package.R 'data.table' \
+  && Rscript /root/install-r-package.R 'DBI' \
+  && Rscript /root/install-r-package.R 'e1071' \
+  && Rscript /root/install-r-package.R 'mice' \
+  && Rscript /root/install-r-package.R 'mlbench' \
+  && Rscript /root/install-r-package.R 'odbc' \
+  && Rscript /root/install-r-package.R 'randomForest' \
+  && Rscript /root/install-r-package.R 'RPostgres' \
+  && Rscript /root/install-r-package.R 'RPostgreSQL' \
+  && Rscript /root/install-r-package.R 'tableone' \
+  && Rscript /root/install-r-package.R 'tidyverse' \
+  && Rscript /root/install-r-package.R 'xgboost'
 
 # Create rstudio-server user and modify file/directory permissions.
 RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \
