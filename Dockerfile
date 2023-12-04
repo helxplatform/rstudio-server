@@ -68,7 +68,8 @@ RUN apt-get install -y r-base-dev cmake curl libcurl4-openssl-dev \
 
 # Use a small script that will try to install a package and returns an error
 # if not found after the install function is run.
-RUN Rscript /root/install-r-package.R 'caret' \
+RUN Rscript /root/install-r-package.R 'benchmarkme' \
+  && Rscript /root/install-r-package.R 'caret' \
   && Rscript /root/install-r-package.R 'data.table' \
   && Rscript /root/install-r-package.R 'DBI' \
   && Rscript /root/install-r-package.R 'e1071' \
