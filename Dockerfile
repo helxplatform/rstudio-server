@@ -20,7 +20,7 @@ RUN cmake .. -DRSTUDIO_TARGET=Server -DCMAKE_BUILD_TYPE=Release \
 
 # Drop build layer and copy the rstudio-server installed files to another
 # layer.
-FROM ubuntu:jammy-20230816 as base
+FROM ubuntu:jammy-20240427 as base
 COPY --from=builder /usr/local/lib/rstudio-server /usr/local/lib/rstudio-server
 
 ARG END_USER_USERNAME=helx

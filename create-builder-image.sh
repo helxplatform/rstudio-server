@@ -6,7 +6,7 @@ set -eoux pipefail
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TIMESTAMP=`date "+%Y%m%d%H%M"`
 
-RSTUDIO_SOURCE_TAG="v2023.09.0+463"
+RSTUDIO_SOURCE_TAG="v2024.04.1+748"
 RSTUDIO_TARBALL="${RSTUDIO_SOURCE_TAG}.tar.gz"
 RSTUDIO_TARBALL_URL="https://github.com/rstudio/rstudio/archive/refs/tags/${RSTUDIO_TARBALL}"
 
@@ -41,7 +41,7 @@ fi
 
 cd $RSTUDIO_SRC_DIR
 IMAGE=jammy
-docker build                                \
+docker build                              \
   --tag "$REPO:$IMAGE_TAG"                  \
   --file "docker/jenkins/Dockerfile.$IMAGE" \
   .
