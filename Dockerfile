@@ -1,5 +1,5 @@
 # The "rstudio:jammy-amd64-builder" image is built with the create-builder-image.sh script.
-FROM rstudio:jammy-amd64-builder as builder
+FROM localhost/rstudio:jammy-amd64-builder as builder
 
 # Install a nodejs version that is newer than the one included in LTS version of Ubuntu.
 # https://github.com/nodesource/distributions
@@ -20,7 +20,7 @@ RUN cmake .. -DRSTUDIO_TARGET=Server -DCMAKE_BUILD_TYPE=Release \
 
 # Drop build layer and copy the rstudio-server installed files to another
 # layer.
-FROM ubuntu:jammy-20230816 as base
+FROM ubuntu:jammy-20250126 as base
 COPY --from=builder /usr/local/lib/rstudio-server /usr/local/lib/rstudio-server
 
 ARG END_USER_USERNAME=helx

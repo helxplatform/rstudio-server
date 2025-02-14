@@ -6,7 +6,7 @@ set -eoux pipefail
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TIMESTAMP=`date "+%Y%m%d%H%M"`
 
-RSTUDIO_SOURCE_TAG="v2023.09.0+463"
+RSTUDIO_SOURCE_TAG=${RSTUDIO_SOURCE_TAG-"v2024.12.0+467"}
 RSTUDIO_TARBALL="${RSTUDIO_SOURCE_TAG}.tar.gz"
 RSTUDIO_TARBALL_URL="https://github.com/rstudio/rstudio/archive/refs/tags/${RSTUDIO_TARBALL}"
 
@@ -28,7 +28,7 @@ else
   cd $SCRIPT_DIR
 fi
 
-REPO="rstudio"
+REPO="localhost/rstudio"
 IMAGE_TAG="jammy-amd64-builder"
 
 # check to see if there's already a built image
