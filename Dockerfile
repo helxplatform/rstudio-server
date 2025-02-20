@@ -61,10 +61,11 @@ COPY root /
 # Packages needed for each R package (not complete):
 #   tidyverse: libfribidi-dev libfreetype6-dev libharfbuzz-dev libpng-dev
 #              libtiff5-dev libjpeg-dev
-RUN apt-get install -y r-base-dev cmake curl libcurl4-openssl-dev \
+RUN DEBIAN_FRONTEND=noninteractive \
+      apt-get install -y r-base-dev cmake curl libcurl4-openssl-dev \
       libfontconfig1-dev libfribidi-dev libfreetype6-dev libharfbuzz-dev \
-      libjpeg-dev libpng-dev libpq-dev libssl-dev libtiff5-dev libxml2-dev \
-      unixodbc-dev
+      libjpeg-dev libnss-ldap libpng-dev libpq-dev libssl-dev libtiff5-dev \
+      libxml2-dev unixodbc-dev
 
 # Use a small script that will try to install a package and returns an error
 # if not found after the install function is run.
