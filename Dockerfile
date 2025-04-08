@@ -4,9 +4,10 @@ FROM rstudio:jammy-amd64-builder as builder
 # Install a nodejs version that is newer than the one included in LTS version of Ubuntu.
 # https://github.com/nodesource/distributions
 RUN apt-get update && apt-get install -y ca-certificates curl gnupg && \
-    mkdir -p /etc/apt/keyrings && \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
+    mkdir -p /usr/share/keyrings && \
+    mkdir -p /usr/share/sources.list.d && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o /usr/share/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /usr/share/sources.list.d/nodesource.list && \
     apt-get update && apt-get install nodejs -y
 
 ENV RSTUDIO_SRC_DIR="/usr/local/src/rstudio"
