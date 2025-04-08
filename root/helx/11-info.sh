@@ -3,5 +3,5 @@
 set -eoux pipefail
 
 id
-whoami
+#whoami
 pwd

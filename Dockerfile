@@ -1,12 +1,13 @@
 # The "rstudio:jammy-amd64-builder" image is built with the create-builder-image.sh script.
-FROM localhost/rstudio:jammy-amd64-builder as builder
+FROM rstudio:jammy-amd64-builder as builder
 
 # Install a nodejs version that is newer than the one included in LTS version of Ubuntu.
 # https://github.com/nodesource/distributions
 RUN apt-get update && apt-get install -y ca-certificates curl gnupg && \
-    mkdir -p /etc/apt/keyrings && \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
+    mkdir -p /usr/share/keyrings && \
+    mkdir -p /usr/share/sources.list.d && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o /usr/share/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /usr/share/sources.list.d/nodesource.list && \
     apt-get update && apt-get install nodejs -y
 
 ENV RSTUDIO_SRC_DIR="/usr/local/src/rstudio"
@@ -20,8 +21,7 @@ RUN cmake .. -DRSTUDIO_TARGET=Server -DCMAKE_BUILD_TYPE=Release \
 
 # Drop build layer and copy the rstudio-server installed files to another
 # layer.
-FROM ubuntu:jammy-20250126 as base
-
+FROM ubuntu:jammy-20230816 as base
 COPY --from=builder /usr/local/lib/rstudio-server /usr/local/lib/rstudio-server
 
 ARG END_USER_USERNAME=helx
@@ -54,36 +54,6 @@ RUN apt-get install -y libc6 libclang-dev libpq5 libsqlite3-0 libssl-dev \
 
 # Copy files used for rstudio configuration and starting rstudio-server.
 COPY root /
-
-# Install extra packages for ORDR-D.
-# r-project packages available:
-#      https://cloud.r-project.org/web/packages/available_packages_by_name.html
-# Install some debian packages needed for the requested R packages.
-# Packages needed for each R package (not complete):
-#   tidyverse: libfribidi-dev libfreetype6-dev libharfbuzz-dev libpng-dev
-#              libtiff5-dev libjpeg-dev
-RUN DEBIAN_FRONTEND=noninteractive \
-      apt-get install -y r-base-dev cmake curl libcurl4-openssl-dev \
-      libfontconfig1-dev libfribidi-dev libfreetype6-dev libharfbuzz-dev \
-      libjpeg-dev libnss-ldap libpng-dev libpq-dev libssl-dev libtiff5-dev \
-      libxml2-dev unixodbc-dev
-
-# Use a small script that will try to install a package and returns an error
-# if not found after the install function is run.
-RUN Rscript /root/install-r-package.R 'benchmarkme' \
-  && Rscript /root/install-r-package.R 'caret' \
-  && Rscript /root/install-r-package.R 'data.table' \
-  && Rscript /root/install-r-package.R 'DBI' \
-  && Rscript /root/install-r-package.R 'e1071' \
-  && Rscript /root/install-r-package.R 'mice' \
-  && Rscript /root/install-r-package.R 'mlbench' \
-  && Rscript /root/install-r-package.R 'odbc' \
-  && Rscript /root/install-r-package.R 'randomForest' \
-  && Rscript /root/install-r-package.R 'RPostgres' \
-  && Rscript /root/install-r-package.R 'RPostgreSQL' \
-  && Rscript /root/install-r-package.R 'tableone' \
-  && Rscript /root/install-r-package.R 'tidyverse' \
-  && Rscript /root/install-r-package.R 'xgboost'
 
 # Create rstudio-server user and modify file/directory permissions.
 RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \
