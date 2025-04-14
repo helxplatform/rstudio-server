@@ -98,3 +98,8 @@ tag-version: ## Generate container `{VERSION}` tag
 
 docker-clean: ## Prune unused images, containers, and networks from the local Docker system.
 	docker system prune -f
+
+clean:
+	rm -rf rstudio-src
+	docker rmi -f localhost/jenkins-rstudio-builder:$(IMAGE)-amd64
+	docker rmi -f localhost/rstudio-server
