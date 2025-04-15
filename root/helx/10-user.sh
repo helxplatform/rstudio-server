@@ -94,7 +94,9 @@ fi
 
 if [[ "$USER" != "$DEFAULT_USER" ]]; then
   if [[ $DELETE_DEFAULT_USER_HOME_IF_UNUSED == "yes" ]]; then
-    echo "deleting /home/$DEFAULT_USER"
-    rm -rf /home/$DEFAULT_USER
+    if [ -d /home/$DEFAULT_USER ]; then
+      echo "deleting /home/$DEFAULT_USER"
+      rm -rf /home/$DEFAULT_USER
+    fi
   fi
 fi

@@ -39,6 +39,10 @@ build: ## Build the image. If building on a mac, check out docs for that.
 	    docker build --platform=linux/amd64 --progress=plain \
 		  -t ${APP_NAME} .
 
+build-only-r-s: ## Build the image using a pre-existing builder image.
+	    docker build --platform=linux/amd64 --progress=plain \
+		  -t ${APP_NAME} .
+
 build-nc: ## Build the image without caching.
 		./create-builder-image.sh
 	    docker build --no-cache --platform=linux/amd64 --progress=plain \
