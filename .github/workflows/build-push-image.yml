@@ -5,6 +5,7 @@
 #
 name: Build-Push-Test-Image
 on:
+    workflow_dispatch: null
     push:
      branches-ignore:
       - master
