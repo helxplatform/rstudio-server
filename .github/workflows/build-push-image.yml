@@ -6,8 +6,6 @@
 name: Build-Push-Test-Image
 on:
     push:
-     branches:
-      - develop
      branches-ignore:
       - master
       - main
