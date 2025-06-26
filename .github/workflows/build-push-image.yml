@@ -1,0 +1,33 @@
+# Builds test (PR) and develop images
+#    
+# This workflow will build a test image for everything but develop
+# and main branches. The tag will be test_{your_branch_name}
+#
+name: Build-Push-Test-Image
+on:
+    workflow_dispatch: null
+    push:
+     branches-ignore:
+      - master
+      - main
+     paths-ignore:
+      - README.md
+      - .old_cicd/*
+      - .github/*
+      - .github/workflows/*
+      - LICENSE
+      - .gitignore
+      - .dockerignore
+      - .githooks
+    pull_request:
+     branches:
+      - develop
+      - master
+      - main 
+     types: [ opened, synchronize ]
+         
+jobs:
+  
+  code-checks:
+    uses: helxplatform/helx-github-actions/.github/workflows/code-checks.yml@main
+    secrets: inherit
