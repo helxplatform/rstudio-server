@@ -7,6 +7,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TIMESTAMP=`date "+%Y%m%d%H%M"`
 
 RSTUDIO_SOURCE_TAG=${RSTUDIO_SOURCE_TAG-"v2025.05.1+513"}
+# plus signs cannot be used in docker tags
+RSTUDIO_SOURCE_TAG_DASHES="${RSTUDIO_SOURCE_TAG//+/-}"
 
 RSTUDIO_TARBALL="${RSTUDIO_SOURCE_TAG}.tar.gz"
 RSTUDIO_TARBALL_URL="https://github.com/rstudio/rstudio/archive/refs/tags/${RSTUDIO_TARBALL}"
@@ -30,7 +32,7 @@ else
 fi
 
 REPO="containers.renci.org/helxplatform/rstudio-base"
-IMAGE_TAG="jammy-amd64-builder-$RSTUDIO_SOURCE_TAG"
+IMAGE_TAG="jammy-amd64-builder-$RSTUDIO_SOURCE_TAG_DASHES"
 
 # check to see if there's already a built image
 IMAGEID=$(docker images "$REPO:$IMAGE_TAG" --format "{{.ID}}")

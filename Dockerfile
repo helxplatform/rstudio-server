@@ -1,5 +1,5 @@
 # The base image is built with the create-builder-image.sh script.
-ARG BASE_IMAGE=containers.renci.org/helxplatform/rstudio-base:jammy-amd64-builder-v2025.05.1+513
+ARG BASE_IMAGE=containers.renci.org/helxplatform/rstudio-base:jammy-amd64-builder-v2025.05.1-513
 FROM $BASE_IMAGE as builder
 
 # Install a nodejs version that is newer than the one included in LTS version of Ubuntu.
