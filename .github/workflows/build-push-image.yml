@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - develop
-  workflow_call:
+  workflow_dispatch:
 jobs:
   build-push-dev-image:
     runs-on: ubuntu-latest
