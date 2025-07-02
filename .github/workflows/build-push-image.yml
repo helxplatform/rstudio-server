@@ -1,0 +1,65 @@
+name: Build-Push-Dev-Image
+on:
+  workflow_call:
+jobs:
+  build-push-dev-image:
+    runs-on: ubuntu-latest
+    steps:
+    
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }} 
+        fetch-depth: 0
+
+    - name: Set short git commit SHA
+      id: vars
+      run: |
+        echo "short_sha=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+
+    - name: Confirm git commit SHA output
+      run: echo ${{ steps.vars.outputs.short_sha }}
+
+    # Docker Buildx is important to caching in the Build And Push Container
+    # step
+    # https://github.com/marketplace/actions/build-and-push-docker-images
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: |
+          network=host
+
+    - name: Login to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: containers.renci.org
+        username: ${{ secrets.CONTAINERHUB_USERNAME }}
+        password: ${{ secrets.CONTAINERHUB_TOKEN }}
+        logout: true
+    
+    # Build the local builder image first
+    - name: Create local builder image
+      run: |
+        chmod +x create-builder-image.sh
+        echo "Running script to create the local builder image..."
+        ./create-builder-image.sh
+    - name: Parse Github Reference Name
+      id: branch
+      run: |
+        REF=${{ github.ref_name }}
+        echo "GHR=${REF%/*}" >> $GITHUB_OUTPUT
+    - name: Build and Push Final Image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: true
+        # This build will use the local builder image created in the previous step.
+        # It then pushes the final image to renci-registry and dockerhub.
+        # Cache for this final image comes from dockerhub.
+        tags: |
+          ${{ github.repository }}:${{ steps.branch.outputs.GHR }}
+          ${{ github.repository }}:${{ steps.vars.outputs.short_sha }}
+          containers.renci.org/${{ github.repository }}:${{ steps.branch.outputs.GHR }}
+          containers.renci.org/${{ github.repository }}:${{ steps.vars.outputs.short_sha }}
+        cache-from: type=registry,ref=${{ github.repository }}:buildcache-dev
+        cache-to: type=registry,ref=${{ github.repository }}:buildcache-dev,mode=max
