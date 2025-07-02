@@ -52,7 +52,7 @@ jobs:
       run: |
         chmod +x create-builder-image.sh
         echo "Running script to create the local builder image..."
-        BUILDER_IMAGE=$(./create-builder-image.sh)
+        BUILDER_IMAGE=$(./create-builder-image.sh | tail -n1)
         echo "Publishing builder image: $BUILDER_IMAGE"
         docker push $BUILDER_IMAGE
         echo "builder_image=$BUILDER_IMAGE" >> $GITHUB_OUTPUT
