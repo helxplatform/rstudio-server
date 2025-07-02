@@ -29,8 +29,8 @@ else
   cd $SCRIPT_DIR
 fi
 
-REPO="localhost/rstudio"
-IMAGE_TAG="jammy-amd64-builder"
+REPO="containers.renci.org/helxplatform/rstudio-base"
+IMAGE_TAG="jammy-amd64-builder-$RSTUDIO_SOURCE_TAG"
 
 # check to see if there's already a built image
 IMAGEID=$(docker images "$REPO:$IMAGE_TAG" --format "{{.ID}}")
@@ -46,3 +46,5 @@ docker build                              \
   --tag "$REPO:$IMAGE_TAG"                  \
   --file "docker/jenkins/Dockerfile.$IMAGE" \
   .
+
+echo "$REPO:$IMAGE_TAG"

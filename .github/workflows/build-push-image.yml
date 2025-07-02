@@ -39,23 +39,31 @@ jobs:
         username: ${{ secrets.CONTAINERHUB_USERNAME }}
         password: ${{ secrets.CONTAINERHUB_TOKEN }}
         logout: true
-    
-    # Build the local builder image first
-    - name: Create local builder image
-      run: |
-        chmod +x create-builder-image.sh
-        echo "Running script to create the local builder image..."
-        ./create-builder-image.sh
+
     - name: Parse Github Reference Name
       id: branch
       run: |
         REF=${{ github.ref_name }}
         echo "GHR=${REF%/*}" >> $GITHUB_OUTPUT
+    
+    # Build the local builder image first
+    - name: Create and push builder image
+      id: base-builder
+      run: |
+        chmod +x create-builder-image.sh
+        echo "Running script to create the local builder image..."
+        BUILDER_IMAGE=$(./create-builder-image.sh)
+        echo "Publishing builder image: $BUILDER_IMAGE"
+        docker push $BUILDER_IMAGE
+        echo "builder_image=$BUILDER_IMAGE" >> $GITHUB_OUTPUT
+    
     - name: Build and Push Final Image
       uses: docker/build-push-action@v6
       with:
         context: .
         push: true
+        build-args: |
+          BASE_IMAGE=${{ steps.base-builder.outputs.builder_image }}
         # This build will use the local builder image created in the previous step.
         # It then pushes the final image to renci-registry and dockerhub.
         # Cache for this final image comes from dockerhub.
