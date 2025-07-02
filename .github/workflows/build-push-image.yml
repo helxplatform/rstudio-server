@@ -1,6 +1,6 @@
 name: Build-Push-Dev-Image
 on:
-  push:
+  pull_request:
     branches:
       - develop
   workflow_dispatch:
