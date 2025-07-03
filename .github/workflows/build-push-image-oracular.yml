@@ -1,11 +1,11 @@
-name: Build-Push-Dev-Image
+name: Build-Push-Dev-Image-Oracular
 on:
   pull_request:
     branches:
       - develop
   workflow_dispatch:
 jobs:
-  build-push-dev-image-oracular:
+  build-push-dev-image:
     runs-on: ubuntu-latest
     steps:
     
