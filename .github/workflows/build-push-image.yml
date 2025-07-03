@@ -70,5 +70,3 @@ jobs:
         tags: |
           containers.renci.org/${{ github.repository }}:${{ steps.branch.outputs.GHR }}
           containers.renci.org/${{ github.repository }}:${{ steps.vars.outputs.short_sha }}
-        cache-from: type=registry,ref=containers.renci.org/${{ github.repository }}:buildcache-dev
-        cache-to: type=registry,ref=containers.renci.org/${{ github.repository }}:buildcache-dev,mode=max

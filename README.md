@@ -12,7 +12,16 @@ To build the image you can use the basic docker command or use the included Make
 ```
   make build
 ```
-  To build the image without using the docker cache you can use the 'build-nc' argument.
+To build the image without using the docker cache you can use the 'build-nc' argument.
+
+If you have already built an image for rstudio-server and you don't need to rebuild the jenkins-rstudio-builder you can use the 'build-only-r-s' to bypass the recreation of the builder image.
+
+## Updating
+If you have already built an image for rstudio-server and need to update the rstudio source tag that is used to pull down the source tarball then you should use the 'clean' make argument to remove the 'rstudio-src' directory.
+```
+make clean
+make build
+```
 
 ## Running Locally
 

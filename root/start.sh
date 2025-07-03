@@ -10,6 +10,7 @@ export DEFAULT_USER="helx"
 # will probably not work because of rstudio-server redirects to "/auth-sign-in".
 export RSTUDIO_SERVER_BASE_PATH=${RSTUDIO_SERVER_BASE_PATH-"/"}
 export RSTUDIO_LOG_LEVEL=${RSTUDIO_LOG_LEVEL-"warn"}
+export USER_IDENTITY=${USER_IDENTITY-"local"}
 
 declare -i CURRENT_UID=`id -u`
 if [ $CURRENT_UID -ne 0 ]
