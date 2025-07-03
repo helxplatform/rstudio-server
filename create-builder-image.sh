@@ -32,7 +32,7 @@ else
 fi
 
 REPO="containers.renci.org/helxplatform/rstudio-base"
-IMAGE_TAG="jammy-amd64-builder-$RSTUDIO_SOURCE_TAG_DASHES"
+IMAGE_TAG="focal-amd64-builder-$RSTUDIO_SOURCE_TAG_DASHES"
 
 # check to see if there's already a built image
 IMAGEID=$(docker images "$REPO:$IMAGE_TAG" --format "{{.ID}}")
@@ -43,7 +43,7 @@ else
 fi
 
 cd $RSTUDIO_SRC_DIR
-IMAGE=jammy
+IMAGE=focal
 docker build                              \
   --tag "$REPO:$IMAGE_TAG"                  \
   --file "docker/jenkins/Dockerfile.$IMAGE" \
