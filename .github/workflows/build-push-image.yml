@@ -5,7 +5,7 @@ on:
       - develop
   workflow_dispatch:
 jobs:
-  build-push-dev-image:
+  build-push-dev-image-oracular:
     runs-on: ubuntu-latest
     steps:
     

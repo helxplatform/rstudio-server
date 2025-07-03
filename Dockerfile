@@ -1,5 +1,5 @@
 # The base image is built with the create-builder-image.sh script.
-ARG BASE_IMAGE=containers.renci.org/helxplatform/rstudio-base:focal-amd64-builder-v2025.05.1-513
+ARG BASE_IMAGE=containers.renci.org/helxplatform/rstudio-base:oracular-amd64-builder-v2025.05.1-513
 FROM $BASE_IMAGE as builder
 
 # Install a nodejs version that is newer than the one included in LTS version of Ubuntu.
@@ -21,7 +21,7 @@ RUN cmake .. -DRSTUDIO_TARGET=Server -DCMAKE_BUILD_TYPE=Release \
 
 # Drop build layer and copy the rstudio-server installed files to another
 # layer.
-FROM ubuntu:focal as base
+FROM ubuntu:oracular as base
 
 COPY --from=builder /usr/local/lib/rstudio-server /usr/local/lib/rstudio-server
 
