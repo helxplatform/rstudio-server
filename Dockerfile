@@ -1,5 +1,5 @@
 # The "rstudio:jammy-amd64-builder" image is built with the create-builder-image.sh script.
-FROM localhost/rstudio:jammy-amd64-builder as builder
+FROM localhost/jenkins-rstudio-builder:focal-amd64 as builder
 
 # Install a nodejs version that is newer than the one included in LTS version of Ubuntu.
 # https://github.com/nodesource/distributions
@@ -20,7 +20,7 @@ RUN cmake .. -DRSTUDIO_TARGET=Server -DCMAKE_BUILD_TYPE=Release \
 
 # Drop build layer and copy the rstudio-server installed files to another
 # layer.
-FROM ubuntu:jammy-20250126 as base
+FROM ubuntu:focal-20250404 as base
 
 COPY --from=builder /usr/local/lib/rstudio-server /usr/local/lib/rstudio-server
 
@@ -52,8 +52,8 @@ RUN apt-get upgrade -y && \
 RUN apt-get install -y libc6 libclang-dev libpq5 libsqlite3-0 libssl-dev \
     lsb-release psmisc sudo
 
-# Copy files used for rstudio configuration and starting rstudio-server.
-COPY root /
+# Copy R script to install R packages.
+COPY root/root/install-r-package.R /root/
 
 # Install extra packages for ORDR-D.
 # r-project packages available:
@@ -84,6 +84,9 @@ RUN Rscript /root/install-r-package.R 'benchmarkme' \
   && Rscript /root/install-r-package.R 'tableone' \
   && Rscript /root/install-r-package.R 'tidyverse' \
   && Rscript /root/install-r-package.R 'xgboost'
+
+# Copy files used for rstudio configuration and starting rstudio-server.
+COPY root /
 
 # Create rstudio-server user and modify file/directory permissions.
 RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \

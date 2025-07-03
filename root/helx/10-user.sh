@@ -49,11 +49,13 @@ if [ $CURRENT_UID -ne 0 ]; then
     echo "image is running as the default user created in Dockerfile"
   else
     echo "not running as uid=$DEFAULT_UID or USER!=\"$DEFAULT_USER\""
-    # Modify user entry in /etc/passwd.
-    cp /etc/passwd /tmp/passwd
-    sed -i -e "s/^$DEFAULT_USER\:x\:$DEFAULT_UID\:$DEFAULT_GID\:\:\/home\/$DEFAULT_USER/$USER\:x\:$CURRENT_UID\:$CURRENT_GID\:\:\/home\/$USER/" /tmp/passwd
-    cp /tmp/passwd /etc/passwd
-    rm /tmp/passwd
+    if [[ $USER_IDENTITY == "local" ]]; then
+      # Modify user entry in /etc/passwd.
+      cp /etc/passwd /tmp/passwd
+      sed -i -e "s/^$DEFAULT_USER\:x\:$DEFAULT_UID\:$DEFAULT_GID\:\:\/home\/$DEFAULT_USER/$USER\:x\:$CURRENT_UID\:$CURRENT_GID\:\:\/home\/$USER/" /tmp/passwd
+      cp /tmp/passwd /etc/passwd
+      rm /tmp/passwd
+    fi
     make_home /home/$USER $CURRENT_UID $CURRENT_GID
   fi
 else
@@ -61,21 +63,23 @@ else
   if [[ "$USER" != "$DEFAULT_USER" || \
         "$USER_UID" != "$DEFAULT_UID" || \
         "$USER_GID" != "$DEFAULT_GID" ]]; then
-    # running as root, but will modify the default user entry in /etc/passwd
-    # so it can be switched to from root.
-    echo "renaming $DEFAULT_USER username to $USER"
+    if [[ $USER_IDENTITY == "local" ]]; then
+      # running as root, but will modify the default user entry in /etc/passwd
+      # so it can be switched to from root.
+      echo "renaming $DEFAULT_USER username to $USER"
 
-    # Modify user entry in /etc/passwd.
-    cp /etc/passwd /tmp/passwd
-    sed -i -e "s/^$DEFAULT_USER\:x\:$DEFAULT_UID\:$DEFAULT_GID\:\:\/home\/$DEFAULT_USER/$USER\:x\:$USER_UID\:$USER_GID\:\:\/home\/$USER/" /tmp/passwd
-    cp /tmp/passwd /etc/passwd
-    rm /tmp/passwd
+      # Modify user entry in /etc/passwd.
+      cp /etc/passwd /tmp/passwd
+      sed -i -e "s/^$DEFAULT_USER\:x\:$DEFAULT_UID\:$DEFAULT_GID\:\:\/home\/$DEFAULT_USER/$USER\:x\:$USER_UID\:$USER_GID\:\:\/home\/$USER/" /tmp/passwd
+      cp /tmp/passwd /etc/passwd
+      rm /tmp/passwd
 
-    # modify entry in /etc/shadow - needed to su to user
-    cp /etc/shadow /tmp/shadow
-    sed -i -e "s/^$DEFAULT_USER\:!\:/$USER\:!\:/" /tmp/shadow
-    cp /tmp/shadow /etc/shadow
-    rm /tmp/shadow
+      # modify entry in /etc/shadow - needed to su to user
+      cp /etc/shadow /tmp/shadow
+      sed -i -e "s/^$DEFAULT_USER\:!\:/$USER\:!\:/" /tmp/shadow
+      cp /tmp/shadow /etc/shadow
+      rm /tmp/shadow
+    fi
 
     make_home /home/$USER $USER_UID $USER_GID
     make_home $HOME 0 0
@@ -90,7 +94,9 @@ fi
 
 if [[ "$USER" != "$DEFAULT_USER" ]]; then
   if [[ $DELETE_DEFAULT_USER_HOME_IF_UNUSED == "yes" ]]; then
-    echo "deleting /home/$DEFAULT_USER"
-    rm -rf /home/$DEFAULT_USER
+    if [ -d /home/$DEFAULT_USER ]; then
+      echo "deleting /home/$DEFAULT_USER"
+      rm -rf /home/$DEFAULT_USER
+    fi
   fi
 fi
