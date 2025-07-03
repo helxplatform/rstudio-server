@@ -43,7 +43,7 @@ else
 fi
 
 cd $RSTUDIO_SRC_DIR
-IMAGE=oracular
+IMAGE=jammy
 docker build                              \
   --tag "$REPO:$IMAGE_TAG"                  \
   --file "docker/jenkins/Dockerfile.$IMAGE" \
