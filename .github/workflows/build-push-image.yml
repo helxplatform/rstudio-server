@@ -68,8 +68,6 @@ jobs:
         # It then pushes the final image to renci-registry and dockerhub.
         # Cache for this final image comes from dockerhub.
         tags: |
-          ${{ github.repository }}:${{ steps.branch.outputs.GHR }}
-          ${{ github.repository }}:${{ steps.vars.outputs.short_sha }}
           containers.renci.org/${{ github.repository }}:${{ steps.branch.outputs.GHR }}
           containers.renci.org/${{ github.repository }}:${{ steps.vars.outputs.short_sha }}
         cache-from: type=registry,ref=${{ github.repository }}:buildcache-dev
