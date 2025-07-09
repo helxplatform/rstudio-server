@@ -103,8 +103,8 @@ RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \
     chmod 777 /var/run/rstudio-server && \
     chmod +t /var/run/rstudio-server && \
     chmod g+w /etc/passwd && \
-    chmod 770 /home && \
-    chmod 770 /home/$END_USER_USERNAME && \
+    chmod 775 /home && \
+    chmod 775 /home/$END_USER_USERNAME && \
     chgrp -R $END_USER_GROUP_ID /etc/rstudio && \
     chmod -R g+rwx /etc/rstudio && \
     ln -s /usr/local/lib/rstudio-server/extras/init.d/debian/rstudio-server /rstudio-server
