@@ -1,19 +1,23 @@
-name: Build-Push-Dev-Image
+name: Build-Push-Image
 on:
   pull_request:
     branches:
       - develop
       - main
+  push:
+    branches:
+      - develop
+      - main
   workflow_dispatch:
 jobs:
-  build-push-dev-image:
+  build-push-image:
     runs-on: ubuntu-latest
     steps:
-    
+
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.head_ref }} 
+        ref: ${{ github.head_ref || github.ref }}
         fetch-depth: 0
 
     - name: Set short git commit SHA
@@ -41,19 +45,34 @@ jobs:
         password: ${{ secrets.CONTAINERHUB_TOKEN }}
         logout: true
 
-    - name: Parse Github Reference Name
-      id: branch
-      run: |
-        REF=${{ github.ref_name }}
-        echo "GHR=${REF%/*}" >> $GITHUB_OUTPUT
-
     - name: Read version from config.env
       id: version
       run: |
         VERSION=$(grep '^VERSION=' config.env | cut -d'=' -f2 | tr -d '"')
         echo "version=${VERSION}" >> $GITHUB_OUTPUT
         echo "Using version: ${VERSION}"
-    
+
+    - name: Compute image tags
+      id: tags
+      run: |
+        IMAGE="containers.renci.org/${{ github.repository }}"
+        VERSION="${{ steps.version.outputs.version }}"
+        SHORT_SHA="${{ steps.vars.outputs.short_sha }}"
+        EVENT="${{ github.event_name }}"
+
+        echo "tags<<EOF" >> $GITHUB_OUTPUT
+        if [ "$EVENT" = "pull_request" ]; then
+          PR_NUM="${{ github.event.pull_request.number }}"
+          echo "${IMAGE}:test_${PR_NUM}" >> $GITHUB_OUTPUT
+          echo "${IMAGE}:test_${PR_NUM}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+        else
+          BRANCH="${{ github.ref_name }}"
+          echo "${IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
+          echo "${IMAGE}:${VERSION}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "${IMAGE}:${BRANCH}" >> $GITHUB_OUTPUT
+        fi
+        echo "EOF" >> $GITHUB_OUTPUT
+
     # Build the local builder image first
     - name: Create and push builder image
       id: base-builder
@@ -64,7 +83,7 @@ jobs:
         echo "Publishing builder image: $BUILDER_IMAGE"
         docker push $BUILDER_IMAGE
         echo "builder_image=$BUILDER_IMAGE" >> $GITHUB_OUTPUT
-    
+
     - name: Build and Push Final Image
       uses: docker/build-push-action@v6
       with:
@@ -75,8 +94,4 @@ jobs:
         # This build will use the local builder image created in the previous step.
         # It then pushes the final image to renci-registry and dockerhub.
         # Cache for this final image comes from dockerhub.
-        tags: |
-          containers.renci.org/${{ github.repository }}:${{ steps.version.outputs.version }}
-          containers.renci.org/${{ github.repository }}:${{ steps.version.outputs.version }}-${{ steps.vars.outputs.short_sha }}
-          containers.renci.org/${{ github.repository }}:${{ steps.branch.outputs.GHR }}
-          containers.renci.org/${{ github.repository }}:${{ steps.vars.outputs.short_sha }}
+        tags: ${{ steps.tags.outputs.tags }}
