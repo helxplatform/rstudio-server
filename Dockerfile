@@ -67,7 +67,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
       apt-get install -y r-base-dev cmake curl libcurl4-openssl-dev \
       libfontconfig1-dev libfribidi-dev libfreetype6-dev libharfbuzz-dev \
       libjpeg-dev libnss-ldap libpng-dev libpq-dev libssl-dev libtiff5-dev \
-      libxml2-dev unixodbc-dev
+      libxml2-dev unixodbc-dev libuv1-dev libwebp-dev
 
 # Use a small script that will try to install a package and returns an error
 # if not found after the install function is run.
