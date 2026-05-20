@@ -46,6 +46,13 @@ jobs:
       run: |
         REF=${{ github.ref_name }}
         echo "GHR=${REF%/*}" >> $GITHUB_OUTPUT
+
+    - name: Read version from config.env
+      id: version
+      run: |
+        VERSION=$(grep '^VERSION=' config.env | cut -d'=' -f2 | tr -d '"')
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "Using version: ${VERSION}"
     
     # Build the local builder image first
     - name: Create and push builder image
@@ -69,5 +76,7 @@ jobs:
         # It then pushes the final image to renci-registry and dockerhub.
         # Cache for this final image comes from dockerhub.
         tags: |
+          containers.renci.org/${{ github.repository }}:${{ steps.version.outputs.version }}
+          containers.renci.org/${{ github.repository }}:${{ steps.version.outputs.version }}-${{ steps.vars.outputs.short_sha }}
           containers.renci.org/${{ github.repository }}:${{ steps.branch.outputs.GHR }}
           containers.renci.org/${{ github.repository }}:${{ steps.vars.outputs.short_sha }}
