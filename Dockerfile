@@ -4,7 +4,7 @@ FROM $BASE_IMAGE as builder
 
 # Install a nodejs version that is newer than the one included in LTS version of Ubuntu.
 # https://github.com/nodesource/distributions
-RUN apt-get update && apt-get install -y ca-certificates curl gnupg git && \
+RUN apt-get update && apt-get install -y ca-certificates curl gnupg && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
     echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
@@ -67,7 +67,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
       apt-get install -y r-base-dev cmake curl libcurl4-openssl-dev \
       libfontconfig1-dev libfribidi-dev libfreetype6-dev libharfbuzz-dev \
       libjpeg-dev libnss-ldap libpng-dev libpq-dev libssl-dev libtiff5-dev \
-      libxml2-dev unixodbc-dev libuv1-dev libwebp-dev
+      libxml2-dev unixodbc-dev libuv1-dev libwebp-dev git
 
 # Use a small script that will try to install a package and returns an error
 # if not found after the install function is run.
