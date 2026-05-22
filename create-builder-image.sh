@@ -6,7 +6,7 @@ set -eoux pipefail
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TIMESTAMP=`date "+%Y%m%d%H%M"`
 
-RSTUDIO_SOURCE_TAG=${RSTUDIO_SOURCE_TAG-"v2024.12.1+563"}
+RSTUDIO_SOURCE_TAG=${RSTUDIO_SOURCE_TAG-"v2025.05.1+513"}
 IMAGE=${IMAGE-"focal"}
 
 RSTUDIO_TARBALL="${RSTUDIO_SOURCE_TAG}.tar.gz"
@@ -39,7 +39,7 @@ else
   cd $SCRIPT_DIR
 fi
 
-REPO="localhost/jenkins-rstudio-builder"
+REPO="containers.renci.org/helxplatform/rstudio-base"
 IMAGE_TAG="$IMAGE-amd64"
 
 # check to see if there's already a built image
@@ -55,3 +55,5 @@ docker build                              \
   --tag "$REPO:$IMAGE_TAG"                  \
   --file "docker/jenkins/Dockerfile.$IMAGE" \
   .
+
+echo "$REPO:$IMAGE_TAG"
