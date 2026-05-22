@@ -1,3 +1,4 @@
 config
 rstudio-src
 *.tar.gz
+.vscode

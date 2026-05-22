@@ -1,5 +1,6 @@
-# The "rstudio:jammy-amd64-builder" image is built with the create-builder-image.sh script.
-FROM localhost/rstudio:jammy-amd64-builder as builder
+# The base image is built with the create-builder-image.sh script.
+ARG BASE_IMAGE=containers.renci.org/helxplatform/rstudio-base:focal-amd64
+FROM $BASE_IMAGE as builder
 
 # Install a nodejs version that is newer than the one included in LTS version of Ubuntu.
 # https://github.com/nodesource/distributions
@@ -20,7 +21,7 @@ RUN cmake .. -DRSTUDIO_TARGET=Server -DCMAKE_BUILD_TYPE=Release \
 
 # Drop build layer and copy the rstudio-server installed files to another
 # layer.
-FROM ubuntu:jammy-20250126 as base
+FROM ubuntu:focal as base
 
 COPY --from=builder /usr/local/lib/rstudio-server /usr/local/lib/rstudio-server
 
@@ -52,8 +53,8 @@ RUN apt-get upgrade -y && \
 RUN apt-get install -y libc6 libclang-dev libpq5 libsqlite3-0 libssl-dev \
     lsb-release psmisc sudo
 
-# Copy files used for rstudio configuration and starting rstudio-server.
-COPY root /
+# Copy R script to install R packages.
+COPY root/root/install-r-package.R /root/
 
 # Install extra packages for ORDR-D.
 # r-project packages available:
@@ -66,7 +67,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
       apt-get install -y r-base-dev cmake curl libcurl4-openssl-dev \
       libfontconfig1-dev libfribidi-dev libfreetype6-dev libharfbuzz-dev \
       libjpeg-dev libnss-ldap libpng-dev libpq-dev libssl-dev libtiff5-dev \
-      libxml2-dev unixodbc-dev
+      libxml2-dev unixodbc-dev libuv1-dev libwebp-dev git
 
 # Use a small script that will try to install a package and returns an error
 # if not found after the install function is run.
@@ -85,6 +86,9 @@ RUN Rscript /root/install-r-package.R 'benchmarkme' \
   && Rscript /root/install-r-package.R 'tidyverse' \
   && Rscript /root/install-r-package.R 'xgboost'
 
+# Copy files used for rstudio configuration and starting rstudio-server.
+COPY root /
+
 # Create rstudio-server user and modify file/directory permissions.
 RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \
             -s /bin/bash && \
@@ -99,8 +103,8 @@ RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \
     chmod 777 /var/run/rstudio-server && \
     chmod +t /var/run/rstudio-server && \
     chmod g+w /etc/passwd && \
-    chmod 770 /home && \
-    chmod 770 /home/$END_USER_USERNAME && \
+    chmod 775 /home && \
+    chmod 775 /home/$END_USER_USERNAME && \
     chgrp -R $END_USER_GROUP_ID /etc/rstudio && \
     chmod -R g+rwx /etc/rstudio && \
     ln -s /usr/local/lib/rstudio-server/extras/init.d/debian/rstudio-server /rstudio-server
