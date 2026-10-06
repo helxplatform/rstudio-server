@@ -53,8 +53,8 @@ RUN apt-get upgrade -y && \
 RUN apt-get install -y libc6 libclang-dev libpq5 libsqlite3-0 libssl-dev \
     lsb-release psmisc sudo
 
-# Copy R script to install R packages.
-COPY root/root/install-r-package.R /root/
+# Copy R scripts to install R packages.
+COPY root/root/install-r-package.R root/root/install-bioc-package.R /root/
 
 # Install extra packages for ORDR-D.
 # r-project packages available:
@@ -84,7 +84,18 @@ RUN Rscript /root/install-r-package.R 'benchmarkme' \
   && Rscript /root/install-r-package.R 'RPostgreSQL' \
   && Rscript /root/install-r-package.R 'tableone' \
   && Rscript /root/install-r-package.R 'tidyverse' \
-  && Rscript /root/install-r-package.R 'xgboost'
+  && Rscript /root/install-r-package.R 'xgboost' \
+  && Rscript /root/install-r-package.R 'BiocManager' \
+  && Rscript /root/install-r-package.R 'circlize' \
+  && Rscript /root/install-r-package.R 'cluster' \
+  && Rscript /root/install-r-package.R 'DescTools' \
+  && Rscript /root/install-r-package.R 'hdnom' \
+  && Rscript /root/install-r-package.R 'patchwork' \
+  && Rscript /root/install-r-package.R 'readxl' \
+  && Rscript /root/install-r-package.R 'rms' \
+  && Rscript /root/install-r-package.R 'survival' \
+  && Rscript /root/install-r-package.R 'survminer' \
+  && Rscript /root/install-bioc-package.R 'ComplexHeatmap'
 
 # Copy files used for rstudio configuration and starting rstudio-server.
 COPY root /
