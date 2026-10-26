@@ -37,10 +37,11 @@ RUN apt-get update && \
   wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc && \
   add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
 
-# Upgrade packages. Install R, vim, sudo (for rstudio build). 
+# Upgrade packages. Install R, vim, sudo (for rstudio build), and nginx, which
+# fronts rserver (see root/etc/nginx/rstudio/nginx.conf).
 RUN apt-get upgrade -y && \
     apt-get install -y --no-install-recommends r-base && \
-    apt-get install -y curl vim sudo
+    apt-get install -y curl vim sudo nginx-light
 
 # Install rstudio-server package dependencies.  Package list taken from
 # "Depends" section in output of the dpkg command.
@@ -99,6 +100,13 @@ RUN Rscript /root/install-r-package.R 'benchmarkme' \
 
 # Copy files used for rstudio configuration and starting rstudio-server.
 COPY root /
+
+# nginx runs as the unprivileged user and opens its compiled-in error log
+# before reading its config (which then logs to stderr).
+RUN touch /var/log/nginx/error.log && \
+    chgrp $END_USER_GROUP_ID /var/log/nginx/error.log && \
+    chmod g+w /var/log/nginx/error.log && \
+    echo 'source("/etc/R/rstudio-hardening.R")' >> /etc/R/Rprofile.site
 
 # Create rstudio-server user and modify file/directory permissions.
 RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \
