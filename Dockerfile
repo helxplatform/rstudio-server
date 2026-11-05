@@ -37,10 +37,25 @@ RUN apt-get update && \
   wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc && \
   add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
 
-# Upgrade packages. Install R, vim, sudo (for rstudio build). 
+# Upgrade packages. Install R, vim, sudo (for rstudio build), and nginx, which
+# fronts rserver (see root/etc/nginx/rstudio/nginx.conf).
 RUN apt-get upgrade -y && \
     apt-get install -y --no-install-recommends r-base && \
-    apt-get install -y curl vim sudo
+    apt-get install -y curl vim sudo nginx-light
+
+# Distrust the roots that chain to the compromised eMudhra intermediates.
+# Focal's ca-certificates fix (USN-8944-2) is ESM-only. Quarto's launcher also
+# trusts Deno's bundled Mozilla roots, which include them.
+RUN sed -i -E 's#^(mozilla/(emSign_ECC_Root_CA_-_G3|Comodo_AAA_Services_root)\.crt)$#!\1#' \
+      /etc/ca-certificates.conf && \
+    update-ca-certificates --fresh && \
+    subjects="$(openssl crl2pkcs7 -nocrl -certfile /etc/ssl/certs/ca-certificates.crt | \
+                openssl pkcs7 -print_certs -noout)" && \
+    ! echo "$subjects" | grep -E 'CN = (emSign ECC Root CA - G3|AAA Certificate Services)$' && \
+    sed -i 's/^export DENO_TLS_CA_STORE=system,mozilla$/export DENO_TLS_CA_STORE=system/' \
+      /usr/local/lib/rstudio-server/bin/quarto/bin/quarto && \
+    grep -q '^export DENO_TLS_CA_STORE=system$' \
+      /usr/local/lib/rstudio-server/bin/quarto/bin/quarto
 
 # Install rstudio-server package dependencies.  Package list taken from
 # "Depends" section in output of the dpkg command.
@@ -53,8 +68,8 @@ RUN apt-get upgrade -y && \
 RUN apt-get install -y libc6 libclang-dev libpq5 libsqlite3-0 libssl-dev \
     lsb-release psmisc sudo
 
-# Copy R script to install R packages.
-COPY root/root/install-r-package.R /root/
+# Copy R scripts to install R packages.
+COPY root/root/install-r-package.R root/root/install-bioc-package.R /root/
 
 # Install extra packages for ORDR-D.
 # r-project packages available:
@@ -84,10 +99,28 @@ RUN Rscript /root/install-r-package.R 'benchmarkme' \
   && Rscript /root/install-r-package.R 'RPostgreSQL' \
   && Rscript /root/install-r-package.R 'tableone' \
   && Rscript /root/install-r-package.R 'tidyverse' \
-  && Rscript /root/install-r-package.R 'xgboost'
+  && Rscript /root/install-r-package.R 'xgboost' \
+  && Rscript /root/install-r-package.R 'BiocManager' \
+  && Rscript /root/install-r-package.R 'circlize' \
+  && Rscript /root/install-r-package.R 'cluster' \
+  && Rscript /root/install-r-package.R 'DescTools' \
+  && Rscript /root/install-r-package.R 'hdnom' \
+  && Rscript /root/install-r-package.R 'patchwork' \
+  && Rscript /root/install-r-package.R 'readxl' \
+  && Rscript /root/install-r-package.R 'rms' \
+  && Rscript /root/install-r-package.R 'survival' \
+  && Rscript /root/install-r-package.R 'survminer' \
+  && Rscript /root/install-bioc-package.R 'ComplexHeatmap'
 
 # Copy files used for rstudio configuration and starting rstudio-server.
 COPY root /
+
+# nginx runs as the unprivileged user and opens its compiled-in error log
+# before reading its config (which then logs to stderr).
+RUN touch /var/log/nginx/error.log && \
+    chgrp $END_USER_GROUP_ID /var/log/nginx/error.log && \
+    chmod g+w /var/log/nginx/error.log && \
+    echo 'source("/etc/R/rstudio-hardening.R")' >> /etc/R/Rprofile.site
 
 # Create rstudio-server user and modify file/directory permissions.
 RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \
