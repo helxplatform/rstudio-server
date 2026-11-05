@@ -43,6 +43,20 @@ RUN apt-get upgrade -y && \
     apt-get install -y --no-install-recommends r-base && \
     apt-get install -y curl vim sudo nginx-light
 
+# Distrust the roots that chain to the compromised eMudhra intermediates.
+# Focal's ca-certificates fix (USN-8944-2) is ESM-only. Quarto's launcher also
+# trusts Deno's bundled Mozilla roots, which include them.
+RUN sed -i -E 's#^(mozilla/(emSign_ECC_Root_CA_-_G3|Comodo_AAA_Services_root)\.crt)$#!\1#' \
+      /etc/ca-certificates.conf && \
+    update-ca-certificates --fresh && \
+    subjects="$(openssl crl2pkcs7 -nocrl -certfile /etc/ssl/certs/ca-certificates.crt | \
+                openssl pkcs7 -print_certs -noout)" && \
+    ! echo "$subjects" | grep -E 'CN = (emSign ECC Root CA - G3|AAA Certificate Services)$' && \
+    sed -i 's/^export DENO_TLS_CA_STORE=system,mozilla$/export DENO_TLS_CA_STORE=system/' \
+      /usr/local/lib/rstudio-server/bin/quarto/bin/quarto && \
+    grep -q '^export DENO_TLS_CA_STORE=system$' \
+      /usr/local/lib/rstudio-server/bin/quarto/bin/quarto
+
 # Install rstudio-server package dependencies.  Package list taken from
 # "Depends" section in output of the dpkg command.
 #   dpkg -I rstudio-server-2023.03.0-386-amd64.deb
