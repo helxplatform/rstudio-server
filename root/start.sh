@@ -2,6 +2,15 @@
 
 set -eoux pipefail
 
+# UNCDSR-182: /etc/passwd is mounted via subPath on an emptyDir so the
+# container's root filesystem can be read-only, which means it starts out
+# empty on every boot. Re-seed it from the pristine, never-mounted-over copy
+# baked at /etc/passwd.default before anything below (10-user.sh in
+# particular) tries to read or rewrite a user entry in it.
+if [ ! -s /etc/passwd ]; then
+  cp /etc/passwd.default /etc/passwd
+fi
+
 export USER=${USER-"helx"}
 export USER_UID=${USER_UID-"1000"}
 export USER_GID=${USER_GID-"0"}
