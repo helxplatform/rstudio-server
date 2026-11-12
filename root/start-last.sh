@@ -28,4 +28,8 @@ echo "log-level=${RSTUDIO_LOG_LEVEL}">>/etc/rstudio/logging.conf
 cp /tmp/rserver.conf /etc/rstudio/rserver.conf
 rm /tmp/rserver.conf
 
+# Users reach rserver only through nginx, so do not start rserver without it.
+mkdir -p /tmp/nginx
+nginx -c /etc/nginx/rstudio/nginx.conf || exit 1
+
 /rstudio-server start
