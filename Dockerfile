@@ -81,7 +81,7 @@ COPY root/root/install-r-package.R root/root/install-bioc-package.R /root/
 RUN DEBIAN_FRONTEND=noninteractive \
       apt-get install -y r-base-dev cmake curl libcurl4-openssl-dev \
       libfontconfig1-dev libfribidi-dev libfreetype6-dev libharfbuzz-dev \
-      libjpeg-dev libnss-ldap libpng-dev libpq-dev libssl-dev libtiff5-dev \
+      libjpeg-dev libnss-ldapd libpng-dev libpq-dev libssl-dev libtiff5-dev \
       libxml2-dev unixodbc-dev libuv1-dev libwebp-dev git
 
 # Use a small script that will try to install a package and returns an error
@@ -125,6 +125,12 @@ RUN touch /var/log/nginx/error.log && \
 # Create rstudio-server user and modify file/directory permissions.
 RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \
             -s /bin/bash && \
+    # UNCDSR-182: pristine, never-mounted-over backups that start.sh/
+    # start-last.sh re-seed their writable (emptyDir-backed) counterparts
+    # from on every boot, since those paths need to be rewritten per-pod
+    # (the real username, the real rserver port/base-path) but the root
+    # filesystem is now read-only.
+    cp /etc/passwd /etc/passwd.default && \
     mkdir -p /var/log/rstudio/rstudio-server && \
     chgrp -R $END_USER_GROUP_ID /var/log/rstudio/rstudio-server && \
     chmod -R g+rwx /var/log/rstudio/rstudio-server && \
@@ -140,6 +146,7 @@ RUN useradd --uid $END_USER_ID --gid $END_USER_GROUP_ID -m $END_USER_USERNAME \
     chmod 775 /home/$END_USER_USERNAME && \
     chgrp -R $END_USER_GROUP_ID /etc/rstudio && \
     chmod -R g+rwx /etc/rstudio && \
+    cp -a /etc/rstudio /etc/rstudio-defaults && \
     ln -s /usr/local/lib/rstudio-server/extras/init.d/debian/rstudio-server /rstudio-server
 
 WORKDIR /
