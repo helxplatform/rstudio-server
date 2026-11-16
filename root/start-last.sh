@@ -25,6 +25,19 @@ fi
 # Remove any existing lines for log-level (usually will not be there).
 sed -i -e "s/^log-level.*//" /tmp/rserver.conf
 echo "log-level=${RSTUDIO_LOG_LEVEL}">>/etc/rstudio/logging.conf
+# UNCDSR-182: rserver requires its server-data-dir to be writable by all
+# users with the sticky bit set (mode 1777), and exits if it can't make it
+# so. Under a read-only root filesystem /var/run/rstudio-server is an
+# emptyDir mount, which Kubernetes creates root-owned with mode 0777 and no
+# sticky bit; this process runs as the user, can't chmod a directory it
+# doesn't own, and rserver fails with "Operation not permitted". So use a
+# subdirectory of that volume that this process creates, owns, and can set
+# to 1777 itself. This works the same with a writable root filesystem.
+SERVER_DATA_DIR=/var/run/rstudio-server/data
+mkdir -p "$SERVER_DATA_DIR"
+chmod 1777 "$SERVER_DATA_DIR"
+sed -i -e "s/^server-data-dir.*//" /tmp/rserver.conf
+echo "server-data-dir=${SERVER_DATA_DIR}">>/tmp/rserver.conf
 cp /tmp/rserver.conf /etc/rstudio/rserver.conf
 rm /tmp/rserver.conf
 
